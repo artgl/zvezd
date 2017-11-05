@@ -7,9 +7,9 @@ import math
 data = [ "30 130", "40 10", "50 140", "60 140", "70 140", "80 130", "90 10", "100 140", "110 140", "120 140" ]
 
 history = []
-history_max_len = 8
+history_max_len = 170
 
-#ser = serial.Serial(sys.argv[1], 9600, timeout=10)
+ser = serial.Serial(sys.argv[1], 9600, timeout=10)
 
 window_width = 600
 window_height = 600
@@ -18,14 +18,14 @@ window_center = [int(window_width / 2), int(window_height / 2)]
 window = pygame.display.set_mode([window_width, window_height])
 
 while True:
-#    s = ser.readline()
+    s = ser.readline()
 
-    s = data.pop(0)
+#    s = data.pop(0)
     data.append(s)
 
     a = s.split(' ')
 
-    gradus = float(a[0])
+    gradus = 360 - float(a[0])
     distance = float(a[1])
 
     v = pygame.math.Vector2()
@@ -53,6 +53,6 @@ while True:
 
     pygame.display.flip()    
 
-    time.sleep(1)
+#    time.sleep(1)
 
-#ser.close() 
+ser.close() 
