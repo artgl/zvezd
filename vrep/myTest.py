@@ -25,23 +25,48 @@
 # IMPORTANT: for each successful call to simxStart, there
 # should be a corresponding call to simxFinish at the end!
 
-try:
-    import vrep
-except:
-    print ('--------------------------------------------------------------')
-    print ('"vrep.py" could not be imported. This means very probably that')
-    print ('either "vrep.py" or the remoteApi library could not be found.')
-    print ('Make sure both are in the same folder as this file,')
-    print ('or appropriately adjust the file "vrep.py"')
-    print ('--------------------------------------------------------------')
-    print ('')
-
+import vrep
 import time
 
+def arm():
+    joints = ["Revolute_joint", "Revolute_joint0", "Revolute_joint1"]
+    opMode = vrep.simx_opmode_blocking
+
+    while True:
+      for name in joints:
+          res, handle = vrep.simxGetObjectHandle(clientID, name, opMode)
+          res, pos = vrep.simxGetJointPosition(clientID, handle, opMode)
+
+          res = vrep.simxSetJointTargetPosition(clientID, handle, pos + 0.1, opMode);
+
+          print name, pos, res
+      time.sleep(2)
+
+def wave():
+    opMode = vrep.simx_opmode_blocking
+    res, handle = vrep.simxGetObjectHandle(clientID, "Revolute_joint0", opMode)
+    res = vrep.simxSetJointTargetVelocity(clientID, handle, 0.6, opMode)
+    print res
+    time.sleep(6)
+    res = vrep.simxSetJointTargetVelocity(clientID, handle, -1.2, opMode)
+    time.sleep(1.5)
+
+#    time.sleep(2)
+#    res = vrep.simxSetJointTargetPosition(clientID, handle, 1.5, opMode);
+#    time.sleep(2)
+#    res = vrep.simxSetJointTargetPosition(clientID, handle, 0, opMode);
+#    time.sleep(2)
+#    res = vrep.simxSetJointTargetPosition(clientID, handle, 1.5, opMode);
+#    time.sleep(2)
+
+
+
+
 print ('Program started')
+
 vrep.simxFinish(-1) # just in case, close all opened connections
 clientID=vrep.simxStart('127.0.0.1',19999,True,True,5000,5) # Connect to V-REP
-if clientID!=-1:
+if clientID != -1:
     print ('Connected to remote API server')
 
     # Now try to retrieve data in a blocking fashion (i.e. a service call):
@@ -53,17 +78,13 @@ if clientID!=-1:
 
     time.sleep(2)
 
-    joints = ["Revolute_joint", "Revolute_joint0", "Revolute_joint1"]
-    opMode=vrep.simx_opmode_blocking
+#    arm()
 
-    while True:
-      for name in joints:
-          res, handle = vrep.simxGetObjectHandle(clientID, name, opMode)
-          res, pos = vrep.simxGetJointPosition(clientID, handle, opMode) 
-          print name, pos
-      time.sleep(2)
+    wave()
+
     # Now close the connection to V-REP:
     vrep.simxFinish(clientID)
 else:
     print ('Failed connecting to remote API server')
+
 print ('Program ended')
