@@ -1,86 +1,100 @@
-# Copyright 2006-2017 Coppelia Robotics GmbH. All rights reserved. 
-# marc@coppeliarobotics.com
-# www.coppeliarobotics.com
-# 
-# -------------------------------------------------------------------
-# THIS FILE IS DISTRIBUTED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
-# WARRANTY. THE USER WILL USE IT AT HIS/HER OWN RISK. THE ORIGINAL
-# AUTHORS AND COPPELIA ROBOTICS GMBH WILL NOT BE LIABLE FOR DATA LOSS,
-# DAMAGES, LOSS OF PROFITS OR ANY OTHER KIND OF LOSS WHILE USING OR
-# MISUSING THIS SOFTWARE.
-# 
-# You are free to use/modify/distribute this file for whatever purpose!
-# -------------------------------------------------------------------
-#
-# This file was automatically created for V-REP release V3.4.0 rev. 1 on April 5th 2017
-
-# Make sure to have the server side running in V-REP: 
-# in a child script of a V-REP scene, add following command
-# to be executed just once, at simulation start:
-#
-# simExtRemoteApiStart(19999)
-#
-# then start simulation, and run this program.
-#
-# IMPORTANT: for each successful call to simxStart, there
-# should be a corresponding call to simxFinish at the end!
-
 import vrep
 import time
 import math
 
+
+def to_rad(grad):
+    if grad > 0:
+        return 2 * math.pi / 360 * grad
+    return 0
+
 def forward():
+
+    str = "a030c140b150d030a140c030b030d150"
+
     opMode = vrep.simx_opmode_blocking
 
-    for i in range(5):
+    i = 0
 
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm1_1", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle, -math.pi / 2.2, opMode);
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_1", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle,  math.pi / 2.2, opMode);
+    while True:
+
+        b1 = str[i + 0]
+        b2 = str[i + 1]
+        b3 = str[i + 2]
+        b4 = str[i + 3]
+
+        grad = int(b2) * 100 + int(b3) * 10 + int(b4)
+
+        if (b1 == 'a'):
+            object_name = "arm1_1"
+            rad = - to_rad(120) + to_rad(grad)
+        if (b1 == 'b'):
+            object_name = "arm1_2"
+            rad = - to_rad(30) + to_rad(grad)
+        if (b1 == 'c'):
+            object_name = "arm2_1"
+            rad = - to_rad(50) + to_rad(grad)
+        if (b1 == 'd'):
+            object_name = "arm2_2"
+            rad = - to_rad(180) + to_rad(30) + to_rad(grad)
+
+        print object_name, grad
+
+        res, handle = vrep.simxGetObjectHandle(clientID, object_name, opMode)
+        res = vrep.simxSetJointTargetPosition(clientID, handle, rad, opMode)
 
         time.sleep(1)
 
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm1_2", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle, math.pi / 4, opMode);
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_2", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle,  -math.pi / 4, opMode);
-
-        time.sleep(1)
-
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm1_1", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle, math.pi / 3, opMode);
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_1", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle, -math.pi / 3, opMode);
-
-        time.sleep(1)
-
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm1_2", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle, 0, opMode);
-        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_2", opMode)
-        res = vrep.simxSetJointTargetPosition(clientID, handle, 0, opMode);
-
+#        res, handle = vrep.simxGetObjectHandle(clientID, object_name, opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, -math.pi / 2.2, opMode)
+#        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_1", opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, math.pi / 2.2, opMode)
+#
+#        time.sleep(1)
+#
+#        res, handle = vrep.simxGetObjectHandle(clientID, "arm1_2", opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, math.pi / 4, opMode)
+#        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_2", opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, -math.pi / 4, opMode)
+#
+#        time.sleep(1)
+#
+#        res, handle = vrep.simxGetObjectHandle(clientID, "arm1_1", opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, math.pi / 3, opMode)
+#        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_1", opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, -math.pi / 3, opMode)
+#
+#        time.sleep(1)
+#
+#        res, handle = vrep.simxGetObjectHandle(clientID, "arm1_2", opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, 0, opMode)
+#        res, handle = vrep.simxGetObjectHandle(clientID, "arm2_2", opMode)
+#        res = vrep.simxSetJointTargetPosition(clientID, handle, 0, opMode)
+#
+        i = i + 4
+        if (i >= len(str)):
+            i = 0
 
     time.sleep(10)
 
 
 print ('Program started')
 
-vrep.simxFinish(-1) # just in case, close all opened connections
-clientID=vrep.simxStart('127.0.0.1',19999,True,True,5000,5) # Connect to V-REP
+vrep.simxFinish(-1)  # just in case, close all opened connections
+clientID = vrep.simxStart('127.0.0.1', 19999, True, True, 5000, 5)  # Connect to V-REP
 if clientID != -1:
     print ('Connected to remote API server')
 
     # Now try to retrieve data in a blocking fashion (i.e. a service call):
-    res,objs=vrep.simxGetObjects(clientID,vrep.sim_handle_all,vrep.simx_opmode_blocking)
-    if res==vrep.simx_return_ok:
-        print ('Number of objects in the scene: ',len(objs))
+    res, objs = vrep.simxGetObjects(clientID, vrep.sim_handle_all, vrep.simx_opmode_blocking)
+    if res == vrep.simx_return_ok:
+        print ('Number of objects in the scene: ', len(objs))
     else:
-        print ('Remote API function call returned with error code: ',res)
+        print ('Remote API function call returned with error code: ', res)
 
     time.sleep(2)
 
-    wave()
+    forward()
 
     # Now close the connection to V-REP:
     vrep.simxFinish(clientID)
