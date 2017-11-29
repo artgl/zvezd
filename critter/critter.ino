@@ -23,9 +23,11 @@ void setup() {
 }
 
 int from_serial = 0;
-char *forward = "a030c140b150d030a140c030b030d150";
+char *forward = "a130c030b150d030a030c140b030d150";
 int pos = 0;
 
+//   a030c140b150d030a140c030b030d150
+//   a030c140b150d030a140c030b030d150
 
 void loop() {
   // put your main code here, to run repeatedly:
