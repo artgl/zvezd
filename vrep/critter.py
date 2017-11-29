@@ -4,14 +4,18 @@ import math
 
 
 def to_rad(grad):
+
     if grad > 0:
-        return 2 * math.pi / 360 * grad
+        return 2 * math.pi / 360* grad
     return 0
 
 def forward():
 
-    str = "a030c140b150d030a140c030b030d150"
-
+#    str = "a030b090a130b000"
+#    str = "a030c030b090d090a130c130b000d180"
+#    str = "a030b000a040c150d090"
+#    str = "a030b000b050c150"
+    str = "b174d174"
     opMode = vrep.simx_opmode_blocking
 
     i = 0
@@ -27,16 +31,16 @@ def forward():
 
         if (b1 == 'a'):
             object_name = "arm1_1"
-            rad = - to_rad(120) + to_rad(grad)
+            rad = - to_rad(90) + to_rad(grad)
         if (b1 == 'b'):
             object_name = "arm1_2"
-            rad = - to_rad(30) + to_rad(grad)
+            rad = - to_rad(90) + to_rad(grad)
         if (b1 == 'c'):
             object_name = "arm2_1"
             rad = - to_rad(50) + to_rad(grad)
         if (b1 == 'd'):
             object_name = "arm2_2"
-            rad = - to_rad(180) + to_rad(30) + to_rad(grad)
+            rad = - to_rad(180) + to_rad(90) + to_rad(grad)
 
         print object_name, grad
 
