@@ -1,4 +1,11 @@
 #include "Servo.h"
+#include <IRremote.h>
+#include <controller.h>
+
+/* =============================================================== */
+
+int RECV_PIN = 11;
+IRrecv irrecv(RECV_PIN);
 
 Servo ser1;
 Servo ser2;
@@ -7,111 +14,142 @@ Servo ser4;
 
 void setup() {
   Serial.begin(9600);
-  // put your setup code here, to run once:
+ 
+  irrecv.enableIRIn();
 
   ser1.write(90);
   ser2.write(90);
   ser3.write(90);
   ser4.write(90);
 
-  ser1.attach(9);
-  ser2.attach(10);
-  ser3.attach(11);
-  ser4.attach(12);
+  ser1.attach(4);
+  ser2.attach(5);
+  ser3.attach(6);
+  ser4.attach(7);
 
   Serial.println("Hello");
+  
 }
 
-int from_serial = 0;
-char *forward = "a130c030b150d030a030c140b030d150";
-int pos = 0;
+void servo_move_to(Servo *ser, int grad, int step_delay)
+{
+    int prev_grad = ser->read();
+    int i;
+    if (grad > prev_grad)
+    {
+        for (i = prev_grad; i <= grad; i++)
+        {
+            ser->write(i);
+            delay(step_delay);
+        }
+    }
+    else
+    {
+        for (i = prev_grad; i >= grad; i--)
+        {
+            ser->write(i);
+            delay(step_delay);
+        }
+    }  
+}
 
-//   a030c140b150d030a140c030b030d150
-//   a030c140b150d030a140c030b030d150
+const char *forward  = "a030c150b150d030a150c030b030d150a120c060b090d090";
+const char *backward = "a150c030b150d030a030c150b030d150a120c060b090d090";
+const char *right = "a030b150a150b030a120c060b090d090";
+const char *left  = "c150d030c030d150a120c060b090d090";
+const char *no = "a020b010a040a020a120c060b090d090";
+const char *yes = "a030b010b090b010a120c060b090d090";
+
+int pos = 0;
+const char *cmd = 0;
+const char *new_cmd = 0;
+int has_new_command = 0;
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
-  int b1, b2, b3, b4;
-  if (from_serial)
-  {
-      b1 = Serial.read();
-      while (b1 == -1) b1 = Serial.read();
-
-      b2 = Serial.read();
-      while (b2 == -1) b2 = Serial.read();
+    // put your main code here, to run repeatedly:
   
-      b3 = Serial.read();
-      while (b3 == -1) b3 = Serial.read();
-  
-      b4 = Serial.read();
-      while (b4 == -1) b4 = Serial.read();
-  }
-  else
-  {
-      b1 = forward[pos + 0];
-      b2 = forward[pos + 1];
-      b3 = forward[pos + 2];
-      b4 = forward[pos + 3];
-      if ((pos + 4) < strlen(forward))
-      {
-          pos = pos + 4;
-      }
-      else
-      {
-          pos = 0;
-      }
-  }
-  
-  int grad = (b2 - '0') * 100 + (b3 - '0') * 10 + (b4 - '0');
+    decode_results results;
+    if (irrecv.decode(&results))
+    {
+        ControllerRes res;
+        if (-1 != controller_decode(results, res))
+        {
+            new_cmd = 0;
+            has_new_command = 1;
 
-  Serial.println((char) b1);
-  Serial.println(grad);
+            if (res.left)
+            {
+                new_cmd = left;
+            }
+            else if (res.right)
+            {
+                new_cmd = right;
+            }
+            else if (res.photo)
+            {
+                new_cmd = forward;
+            }
+            else if (res.light)
+            {
+                new_cmd = backward;
+            }
+            else if (res.b1)
+            {
+                new_cmd = yes;
+            }
+            else if (res.b2)
+            {
+                new_cmd = no;
+            }
+        }
+        irrecv.resume();       
+    }
 
+    if (pos == 0)
+    {
+        if (has_new_command)
+            cmd = new_cmd;
+        else
+            cmd = 0;
+        has_new_command = 0;
+    }
+        
+    if (cmd == 0)
+        return;
   
-
-  Servo* ser = NULL;
-
-  if (b1 == 'a')
-  {
-      ser = &ser1;
-  } 
-  if (b1 == 'b')
-  {
-      ser = &ser2;
-  }
-  if (b1 == 'c')
-  {
-      ser = &ser3;
-  }
-  if (b1 == 'd')
-  {
-      ser = &ser4;
-  }
-  if (b1 == 'z')
-  {
-      delay(grad);  
-  }
+    int b1 = cmd[pos + 0];
+    int b2 = cmd[pos + 1];
+    int b3 = cmd[pos + 2];
+    int b4 = cmd[pos + 3];
   
-  if (ser)
-  {
-      int prev_grad = ser->read();
-      int i;
-      if (grad > prev_grad)
-      {
-          for (i = prev_grad; i <= grad; i++)
-          {
-              ser->write(i);
-              delay(5);
-          }
-      }
-      else
-      {
-          for (i = prev_grad; i >= grad; i--)
-          {
-              ser->write(i);
-              delay(2);
-          }
-      }
+    int grad = (b2 - '0') * 100 + (b3 - '0') * 10 + (b4 - '0');
+  
+    Serial.println((char) b1);
+    Serial.println(grad);
+  
+    if (b1 == 'a')
+    {
+      servo_move_to(&ser1, grad, 5);
+    }
+    if (b1 == 'b')
+    {
+      servo_move_to(&ser2, grad, 5);
+    }
+    if (b1 == 'c')
+    {
+      servo_move_to(&ser3, grad, 5);
+    }
+    if (b1 == 'd')
+    {
+      servo_move_to(&ser4, grad, 5);
+    }
+     
+    if ((pos + 4) < strlen(cmd))
+    {
+        pos = pos + 4;
+    }
+    else
+    {
+        pos = 0;
     }  
 }
