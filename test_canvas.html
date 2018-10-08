@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="400" height="400"
+style="border:1px solid #d3d3d3;">
+Your browser does not support the canvas element.
+</canvas>
+<button id="restart">Restart</button>
+<button id="calculate">Calculate</button>
+
+<script>
+
+  var canvas = document.getElementById("myCanvas");
+  var ctx = canvas.getContext("2d");
+  var points = []
+  var pressed = false
+  
+  ctx.fillText("Click to start drawing",10,10);   
+
+  function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return [evt.clientX - rect.left, evt.clientY - rect.top]
+  }
+  
+  function redraw(final=false)
+  {
+     ctx.clearRect(0, 0, canvas.width, canvas.height);     
+     ctx.beginPath();
+     if (points.length > 0)
+     {
+       ctx.moveTo(points[0][0], points[0][1]);
+       for (var i = 1; i < points.length; i++) {
+         ctx.lineTo(points[i][0], points[i][1]);
+         ctx.stroke();
+       }
+     }
+     if (final)
+     {
+       ctx.lineTo(points[0][0], points[0][1]);
+       ctx.stroke();
+     }
+     ctx.closePath();
+  }
+
+  function onMouseDown(evt) {
+    pressed = true;
+    if (points.length == 0)
+      points.push(getMousePos(canvas, evt));
+    points.push(getMousePos(canvas, evt));
+    redraw();
+  }  
+
+  function onMouseUp(evt) {
+    pressed = false;
+  }  
+  
+  function onMouseMove(evt) {
+    if (pressed)
+    {
+      points[points.length - 1] = getMousePos(canvas, evt);
+      redraw()
+    }
+  }
+  
+  function restart()
+  {
+    points = []
+    redraw()
+  }
+
+  function calculate()
+  {
+    redraw(true)
+    window.alert("Number of points: " + points.length)
+  }
+
+  canvas.addEventListener('mousedown', onMouseDown, false);
+  canvas.addEventListener('mouseup', onMouseUp, false);
+  canvas.addEventListener('mousemove', onMouseMove, false);
+
+  var restartButton = document.getElementById("restart");
+  restartButton.addEventListener('click', restart, false);
+
+  var calculateButton = document.getElementById("calculate");
+  calculateButton.addEventListener('click', calculate, false);
+
+</script>
+
+</body>
+</html>
+
