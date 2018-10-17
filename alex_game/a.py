@@ -1,17 +1,14 @@
 import pygame
 import sys
 import time
-from settings import lazurit
-from settings import transparent
-from settings import size, white
+
+size = (1440, 600)
 
 side = 'right'
 pygame.init()
 pygame.display.set_caption('ny sho govno, opyat\' nazralsya?')
 screen = pygame.display.set_mode(size)
 background = pygame.transform.scale(pygame.image.load('hqdefault.jpg'),size)
-img = pygame.transform.scale2x(pygame.image.load('Untitled.gif'))
-img.set_colorkey(img.get_at((0,0)))
 
 player_x = 77 * 2
 player_y = 57 * 2
@@ -103,7 +100,6 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit(0)
-        screen.fill(white)
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
             moving = True
@@ -134,17 +130,8 @@ while True:
             z = (z[0], 440)
             moving = False
 
-
-
     if jumping:
         z = (z[0], base_y - jump_y[i])
-
-
-
-
-
-
-
 
     if moving:
         z = (z[0] + distance, z[1])
