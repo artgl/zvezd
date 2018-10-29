@@ -1,0 +1,59 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <titel>EV3DEV</titel>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script> 
+    </head>
+<body>
+    <table>
+    <tbody>
+        <tr>
+            <td></td>
+            <td><input type="button" id="button1" value="&#x2191;"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><input type="button" id="button2" value="&#x2190;"/></td>
+            <td><input type="button" id="button5" value="&#x2620;"/></td>
+            <td><input type="button" id="button3" value="&#x2192;"/></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="button" id="button4" value="&#x2193;"/></td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+    <script>
+	 
+	  $("#button1").click(function(){ // задаем функцию при нажатиии на элемент <div>
+          //http://127.0.0.1:8888/down
+        $.ajax({
+	        url: "/up",});   
+      });
+      $("#button2").click(function(){ // задаем функцию при нажатиии на элемент <div>
+          //http://127.0.0.1:8888/down
+        $.ajax({
+	        url: "/left",});   
+      });
+      $("#button3").click(function(){ // задаем функцию при нажатиии на элемент <div>
+          //http://127.0.0.1:8888/down
+        $.ajax({
+	        url: "/right",});   
+      });
+      $("#button4").click(function(){ // задаем функцию при нажатиии на элемент <div>
+          //http://127.0.0.1:8888/down
+        $.ajax({
+	        url: "/down",});   
+      });
+      $("#button5").click(function(){ // задаем функцию при нажатиии на элемент <div>
+          //http://127.0.0.1:8888/down
+        $.ajax({
+	        url: "/center",});   
+      });
+
+        
+        
+    </script>
+    </body>
+</html>
