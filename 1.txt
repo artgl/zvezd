@@ -1,1 +1,1 @@
-Master do something strange in this file
+Test file with some content
