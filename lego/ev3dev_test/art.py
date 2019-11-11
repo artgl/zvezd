@@ -4,6 +4,7 @@ import math
 from ev3dev2.motor import LargeMotor, OUTPUT_C, OUTPUT_D, OUTPUT_B
 from ev3dev2.sensor.lego import UltrasonicSensor
 from ev3dev2.sound import Sound
+from ev3dev2.sensor.lego import GyroSensor
 
 import time
 from ev3dev2.sound import Sound
@@ -50,6 +51,18 @@ def otpusk(a_min, a_max):
         time.sleep(0.1)
     m3.off()
 
+def povorot(rotation, m1, m2):
+    gyr = GyroSensor()
+    k = gyr.angle + rotation
+    print("povorot")
+    print(gyr.angle, file=sys.stderr)
+    print(k, file=sys.stderr)
+    while abs(gyr.angle-k) > 10:
+        print(gyr.angle, file = sys.stderr)
+        m1.on_for_seconds(35,0.2, block=False)
+        m2.on_for_seconds(-35,0.2, block=False)
+        time.sleep(0.2)
+
 t1 = time.time()
 m1.on(-10, block=False)
 m2.on(-10, block=False)
@@ -67,19 +80,17 @@ sound.speak('TI MNE MESHAYESH')
 
 zahvat(a_min, a_max)
 
-m1.on_for_seconds(-10, 2, block=False)
-m2.on_for_seconds(10, 2, block=False)
-time.sleep(2)
+povorot(180,m1,m2)
 
 otpusk(a_min, a_max)
 
-m1.on_for_seconds(10, 2, block=False)
-m2.on_for_seconds(-10, 2, block=False)
+m1.on_for_seconds(10, 2.5, block=False)
+m2.on_for_seconds(10, 2.5, block=False)
 time.sleep(2)
 
-m1.on_for_seconds(-10, 2, block=False)
-m2.on_for_seconds(-10, 2, block=False)
-time.sleep(2)
+povorot(180,m1,m2)
+
+sound.speak('PRIEHALI')
 
 sys.exit()
 
@@ -89,6 +100,10 @@ t3 = time.time()
 while time.time() < t3 + (t2 - t1): 
     time.sleep(0.1)
 m1.off()
+m2.off()
+
+
+
 m2.off()
 
 
