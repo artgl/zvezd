@@ -35,6 +35,13 @@ def one_step_to(game, unit, target_position):
                 my_map[x][y] = 9
 
     for x in range(len_x):
+        for y in range(len_y):
+            if tiles[x][y] == model.Tile.JUMP_PAD:
+                for i in range(10):
+                    if (y+i) < len_y and my_map[x][y+i] == 0:
+                        my_map[x][y+i] = 1
+ 
+    for x in range(len_x):
         for y in reversed(range(len_y)):
             if my_map[x][y] == 3:
                 if tiles[x-1][y] == model.Tile.EMPTY:
