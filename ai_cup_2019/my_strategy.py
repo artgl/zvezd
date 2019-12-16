@@ -34,7 +34,12 @@ class MyStrategy:
                 box.item, model.Item.Weapon), game.loot_boxes),
             key=lambda box: distance_sqr(box.position, unit.position),
             default=None)
-        
+        nearest_hp = min(
+            filter(lambda box: isinstance(
+                box.item, model.Item.HealthPack), game.loot_boxes),
+            key=lambda box: distance_sqr(box.position, unit.position),
+            default=None)
+         
         target_pos = unit.position
         if unit.weapon is None:
             if nearest_pistol:
@@ -43,6 +48,8 @@ class MyStrategy:
                  target_pos = nearest_weapon.position
         elif (unit.weapon.typ != model.WeaponType.PISTOL) and nearest_pistol:
             target_pos = nearest_pistol.position
+        elif unit.health < 50 and nearest_hp:
+            target_pos = nearest_hp.position
         elif nearest_enemy is not None:
             target_pos = nearest_enemy.position
 
@@ -57,21 +64,30 @@ class MyStrategy:
             aim = model.Vec2Double(
                 nearest_enemy.position.x - unit.position.x,
                 nearest_enemy.position.y - unit.position.y)
-        jump = target_pos.y > unit.position.y \
-                or game.level.tiles[int(unit.position.x)][int(unit.position.y - 1)] == model.Tile.EMPTY
+#        jump = target_pos.y > unit.position.y \
+#                or game.level.tiles[int(unit.position.x)][int(unit.position.y - 1)] == model.Tile.EMPTY
+        jump = target_pos.y > unit.position.y
         if target_pos.x > unit.position.x and game.level.tiles[int(unit.position.x + 1)][int(unit.position.y)] == model.Tile.WALL:
             jump = True
         if target_pos.x < unit.position.x and game.level.tiles[int(unit.position.x - 1)][int(unit.position.y)] == model.Tile.WALL:
             jump = True
 
-           
+          
+        print(abs(target_pos.x - unit.position.x))
+
+        shoot = True
+        if unit.weapon and unit.weapon.typ == model.WeaponType.ROCKET_LAUNCHER:
+            shoot = False
+            if nearest_enemy and abs(nearest_enemy.position.x - unit.position.x) < 15:
+                shoot = True
+ 
         return model.UnitAction(
-            velocity=10 * (target_pos.x - unit.position.x),
+            velocity=20 * (target_pos.x - unit.position.x),
 #            velocity=100 if target_pos.x > unit.position.x else -100,
             jump=jump,
             jump_down=not jump,
             aim=aim,
-            shoot=True,
+            shoot=shoot,
             reload=False,
             swap_weapon=(unit.weapon and (unit.weapon.typ != model.WeaponType.PISTOL)),
             plant_mine=False)
