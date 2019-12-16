@@ -43,8 +43,12 @@ def one_step_to(game, unit, target_position):
             if tiles[x][y] == model.Tile.JUMP_PAD:
                 for i in range(10):
                     if (y+i) < len_y and my_map[x][y+i] == 0:
-                        my_map[x][y+i] = 1
- 
+                        my_map[x][y+i] = 1 + i
+                if tiles[x+1][y] == model.Tile.EMPTY:
+                    my_map[x+1][y] = 1
+                if tiles[x-1][y] == model.Tile.EMPTY:
+                    my_map[x-1][y] = 1
+  
     for x in range(len_x):
         for y in reversed(range(len_y)):
             if my_map[x][y] == 3:
@@ -102,7 +106,7 @@ def one_step_to(game, unit, target_position):
     if len(path) > 1:
         print(grid.grid_str(path=path, start=start, end=end))
         if target_position.x > unit.position.x:
-            return model.Vec2Float(path[1][0] + 0.5, len_y - 1 - path[1][1])
+            return model.Vec2Float(path[1][0] + 0.6, len_y - 1 - path[1][1])
         else:
             return model.Vec2Float(path[1][0], len_y - 1 - path[1][1])
     else:
