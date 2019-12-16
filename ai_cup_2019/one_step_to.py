@@ -24,11 +24,11 @@ def one_step_to(game, unit, target_position):
         for y in reversed(range(len_y)):
             my_map[x][y] = 0
             if tiles[x][y] == model.Tile.PLATFORM:
-                my_map[x][y] = 1
+                my_map[x][y] = 3
                 if tiles[x][y+1] == model.Tile.EMPTY:
                     my_map[x][y+1] = 3
             if tiles[x][y] == model.Tile.LADDER:
-                my_map[x][y] = 1
+                my_map[x][y] = 3
                 if tiles[x][y+1] == model.Tile.EMPTY:
                     my_map[x][y+1] = 3
             if tiles[x][y] == model.Tile.EMPTY and tiles[x][y - 1] == model.Tile.WALL:
