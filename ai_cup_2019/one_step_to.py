@@ -23,8 +23,12 @@ def one_step_to(game, unit, target_position):
     for x in range(len_x):
         for y in reversed(range(len_y)):
             my_map[x][y] = 0
-            if tiles[x][y] == model.Tile.LADDER or tiles[x][y] == model.Tile.PLATFORM:
-                my_map[x][y] = 3
+            if tiles[x][y] == model.Tile.PLATFORM:
+                my_map[x][y] = 1
+                if tiles[x][y+1] == model.Tile.EMPTY:
+                    my_map[x][y+1] = 3
+            if tiles[x][y] == model.Tile.LADDER:
+                my_map[x][y] = 1
                 if tiles[x][y+1] == model.Tile.EMPTY:
                     my_map[x][y+1] = 3
             if tiles[x][y] == model.Tile.EMPTY and tiles[x][y - 1] == model.Tile.WALL:
@@ -72,7 +76,7 @@ def one_step_to(game, unit, target_position):
                 if my_map[x+1][y-1] == 0 and tiles[x+1][y-1] == model.Tile.EMPTY:
                     my_map[x+1][y-1] = 9
 
-    print(unit.position.x, unit.position.y)
+#    print(unit.position.x, unit.position.y)
 
     # print my_map
     for y in reversed(list(range(len_y))):
@@ -95,9 +99,9 @@ def one_step_to(game, unit, target_position):
     end = grid.node(int(target_position.x), len_y - 1 - int(target_position.y))
     finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
     path, runs = finder.find_path(start, end, grid)
-    if len(path) > 1:
+    if len(path) > 2:
         print(grid.grid_str(path=path, start=start, end=end))
-        return model.Vec2Float(path[1][0], len_y - 1 - path[1][1])
+        return model.Vec2Float(path[2][0], len_y - 1 - path[2][1])
     else:
         print(grid.grid_str(start=start, end=end))
         return None

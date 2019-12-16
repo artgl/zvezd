@@ -24,15 +24,25 @@ class MyStrategy:
             filter(lambda u: u.player_id != unit.player_id, game.units),
             key=lambda u: distance_sqr(u.position, unit.position),
             default=None)
-        nearest_weapon = min(
+        nearest_pistol = min(
             filter(lambda box: isinstance(
                 box.item, model.Item.Weapon) and box.item.weapon_type == 0, game.loot_boxes),
             key=lambda box: distance_sqr(box.position, unit.position),
             default=None)
-       
+        nearest_weapon = min(
+            filter(lambda box: isinstance(
+                box.item, model.Item.Weapon), game.loot_boxes),
+            key=lambda box: distance_sqr(box.position, unit.position),
+            default=None)
+        
         target_pos = unit.position
-        if (unit.weapon is None or (unit.weapon.typ != model.WeaponType.PISTOL)) and nearest_weapon is not None:
-            target_pos = nearest_weapon.position
+        if unit.weapon is None:
+            if nearest_pistol:
+                 target_pos = nearest_pistol.position
+            else:
+                 target_pos = nearest_weapon.position
+        elif (unit.weapon.typ != model.WeaponType.PISTOL) and nearest_pistol:
+            target_pos = nearest_pistol.position
         elif nearest_enemy is not None:
             target_pos = nearest_enemy.position
 
