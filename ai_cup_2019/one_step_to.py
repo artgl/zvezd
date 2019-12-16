@@ -99,9 +99,12 @@ def one_step_to(game, unit, target_position):
     end = grid.node(int(target_position.x), len_y - 1 - int(target_position.y))
     finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
     path, runs = finder.find_path(start, end, grid)
-    if len(path) > 2:
+    if len(path) > 1:
         print(grid.grid_str(path=path, start=start, end=end))
-        return model.Vec2Float(path[2][0], len_y - 1 - path[2][1])
+        if target_position.x > unit.position.x:
+            return model.Vec2Float(path[1][0] + 0.5, len_y - 1 - path[1][1])
+        else:
+            return model.Vec2Float(path[1][0], len_y - 1 - path[1][1])
     else:
         print(grid.grid_str(start=start, end=end))
         return None
