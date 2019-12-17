@@ -62,6 +62,13 @@ class MyStrategy:
             key=lambda u: distance_sqr(u.position, unit.position),
             default=None)
 
+        nearest_enemy2 = max(
+            filter(lambda u: u.player_id != unit.player_id, game.units),
+            key=lambda u: distance_sqr(u.position, unit.position),
+            default=None)
+
+
+
         nearest_weapon = None
         if nearest_friend:
             if nearest_friend.id > unit.id:
@@ -108,11 +115,6 @@ class MyStrategy:
 
         debug.draw(model.CustomData.Log("Target pos: {}".format(target_pos)))
         debug.draw(model.CustomData.Log("Unit pos: {}".format(unit.position)))
-        aim = model.Vec2Double(0, 0)
-        if nearest_enemy is not None:
-            aim = model.Vec2Double(
-                nearest_enemy.position.x - unit.position.x,
-                nearest_enemy.position.y - unit.position.y)
         jump = target_pos.y > unit.position.y
         if target_pos.x > unit.position.x and game.level.tiles[int(unit.position.x + 1)][int(unit.position.y)] == model.Tile.WALL:
             jump = True
@@ -131,10 +133,21 @@ class MyStrategy:
         shoot = True
         if nearest_friend:
             if nearest_enemy and on_fire_line(unit, nearest_enemy, nearest_friend, game):
-                shoot = False
+                nearest_enemy = nearest_enemy2
+                if nearest_enemy and on_fire_line(unit, nearest_enemy, nearest_friend, game):
+                    shoot = False
         else:
             if on_fire_line(unit, nearest_enemy, unit, game):
-                shoot = False
+                nearest_enemy = nearest_enemy2
+                if on_fire_line(unit, nearest_enemy, unit, game):
+                    shoot = False
+
+        aim = model.Vec2Double(0, 0)
+        if nearest_enemy is not None:
+            aim = model.Vec2Double(
+                nearest_enemy.position.x - unit.position.x,
+                nearest_enemy.position.y - unit.position.y)
+
         
 #        if unit.weapon and unit.weapon.typ == model.WeaponType.ROCKET_LAUNCHER:
 #            shoot = False
