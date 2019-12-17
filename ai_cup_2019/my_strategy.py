@@ -90,7 +90,14 @@ class MyStrategy:
                     box.item, model.Item.Weapon), game.loot_boxes),
                 key=lambda box: distance_sqr(box.position, unit.position),
                 default=None)
+
         nearest_hp = min(
+            filter(lambda box: isinstance(
+                box.item, model.Item.HealthPack), game.loot_boxes),
+            key=lambda box: distance_sqr(box.position, unit.position),
+            default=None)
+
+        nearest_hp2 = max(
             filter(lambda box: isinstance(
                 box.item, model.Item.HealthPack), game.loot_boxes),
             key=lambda box: distance_sqr(box.position, unit.position),
@@ -100,6 +107,12 @@ class MyStrategy:
         if unit.health < 80 and nearest_hp:
             debug.draw(model.CustomData.Log("target: xp"))
             target_pos = nearest_hp.position
+            if nearest_enemy:
+                d1 = distance_sqr_u(unit, nearest_hp)
+                d2 = distance_sqr_u(nearest_enemy, nearest_hp)
+                if d2 < d1:
+                    target_pos = nearest_hp2.position
+                    debug.draw(model.CustomData.Log("target: xp2"))
         elif unit.weapon is None:
             debug.draw(model.CustomData.Log("target: initial weapon"))
             target_pos = nearest_weapon.position
@@ -131,7 +144,8 @@ class MyStrategy:
                     jump = False
         if nearest_friend and nearest_friend.id > unit.id:
             dx = (nearest_friend.position.x - unit.position.x - math.copysign(1, target_pos.x - unit.position.x))
-            if abs(dx) < 1.5:
+            dy = (nearest_friend.position.y - unit.position.y)
+            if abs(dx) < 1.5 and abs(dy) < 1.5:
                 jump = True
 
         shoot = True
@@ -154,10 +168,12 @@ class MyStrategy:
 
         direction = 1
         for u in game.units:
-            if u.player_id != unit.player_id:
+            if u.player_id != unit.player_id or True:
                 if u.weapon and u.weapon.typ == model.WeaponType.ROCKET_LAUNCHER:
                     if distance_sqr(u.position, unit.position) < 150:
                         direction = -1
+                        if nearest_friend and nearest_friend.id < unit.id:
+                            direction = 1
                         break
 
         velocity = direction * 20 * (target_pos.x - unit.position.x)
