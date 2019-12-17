@@ -9,11 +9,14 @@ import pathfinding
 from one_step_to import one_step_to
 import math
 
+
 def distance_sqr(a, b):
             return (a.x - b.x) ** 2 + (a.y - b.y) ** 2
 
+
 def distance_sqr_u(a, b):
             return (a.position.x - b.position.x) ** 2 + (a.position.y - b.position.y) ** 2
+
 
 def on_fire_line(u1, enemy, u2, game):
 
@@ -36,7 +39,7 @@ def on_fire_line(u1, enemy, u2, game):
         if math.sqrt(distance_sqr(pos1, u2)) < 1:
             print("stop fire!!!")
             return True
-        if i < 6 and game.level.tiles[int(pos1.x)][int(pos1.y+0.5)] == model.Tile.WALL:
+        if i < 6 and game.level.tiles[int(pos1.x)][int(pos1.y + 0.5)] == model.Tile.WALL:
             print("stop fire wall !!!")
             return True
     return False
@@ -51,9 +54,9 @@ class MyStrategy:
 
         if len(game.units) > 2:
             nearest_friend = max(
-                    filter(lambda u: u.player_id == unit.player_id, game.units),
-                    key=lambda u: distance_sqr(u.position, unit.position),
-                    default=None)
+                filter(lambda u: u.player_id == unit.player_id, game.units),
+                key=lambda u: distance_sqr(u.position, unit.position),
+                default=None)
         else:
             nearest_friend = None
 
@@ -67,20 +70,18 @@ class MyStrategy:
             key=lambda u: distance_sqr(u.position, unit.position),
             default=None)
 
-
-
         nearest_weapon = None
         if nearest_friend:
             if nearest_friend.id > unit.id:
                 nearest_weapon = min(
-                    filter(lambda box: isinstance(
-                        box.item, model.Item.Weapon) and box.item.weapon_type == model.WeaponType.ASSAULT_RIFLE, game.loot_boxes),
+                    filter(lambda box: isinstance(box.item, model.Item.Weapon)
+                           and box.item.weapon_type != model.WeaponType.ROCKET_LAUNCHER, game.loot_boxes),
                     key=lambda box: distance_sqr(box.position, unit.position),
                     default=None)
             else:
                 nearest_weapon = min(
-                    filter(lambda box: isinstance(
-                        box.item, model.Item.Weapon) and box.item.weapon_type == model.WeaponType.PISTOL, game.loot_boxes),
+                    filter(lambda box: isinstance(box.item, model.Item.Weapon)
+                           and box.item.weapon_type == model.WeaponType.ROCKET_LAUNCHER, game.loot_boxes),
                     key=lambda box: distance_sqr(box.position, unit.position),
                     default=None)
         if not nearest_weapon:
@@ -94,7 +95,7 @@ class MyStrategy:
                 box.item, model.Item.HealthPack), game.loot_boxes),
             key=lambda box: distance_sqr(box.position, unit.position),
             default=None)
-         
+
         target_pos = unit.position
         if unit.health < 80 and nearest_hp:
             debug.draw(model.CustomData.Log("target: xp"))
@@ -116,15 +117,18 @@ class MyStrategy:
         debug.draw(model.CustomData.Log("Target pos: {}".format(target_pos)))
         debug.draw(model.CustomData.Log("Unit pos: {}".format(unit.position)))
         jump = target_pos.y > unit.position.y
-        if target_pos.x > unit.position.x and game.level.tiles[int(unit.position.x + 1)][int(unit.position.y)] == model.Tile.WALL:
+        dx = target_pos.x - unit.position.x
+        if dx > 0.5 and game.level.tiles[int(unit.position.x + 1)][int(unit.position.y)] == model.Tile.WALL:
             jump = True
-        if target_pos.x < unit.position.x and game.level.tiles[int(unit.position.x - 1)][int(unit.position.y)] == model.Tile.WALL:
+        if dx < -0.5 and game.level.tiles[int(unit.position.x - 1)][int(unit.position.y)] == model.Tile.WALL:
             jump = True
         if nearest_enemy:
             dx = (nearest_enemy.position.x - unit.position.x - math.copysign(1, target_pos.x - unit.position.x))
             print(dx)
             if abs(dx) < 1:
                 jump = True
+                if nearest_friend and nearest_friend.id < unit.id:
+                    jump = False
         if nearest_friend and nearest_friend.id > unit.id:
             dx = (nearest_friend.position.x - unit.position.x - math.copysign(1, target_pos.x - unit.position.x))
             if abs(dx) < 1.5:
@@ -148,10 +152,6 @@ class MyStrategy:
                 nearest_enemy.position.x - unit.position.x,
                 nearest_enemy.position.y - unit.position.y)
 
-        
-#        if unit.weapon and unit.weapon.typ == model.WeaponType.ROCKET_LAUNCHER:
-#            shoot = False
-
         direction = 1
         for u in game.units:
             if u.player_id != unit.player_id:
@@ -159,17 +159,15 @@ class MyStrategy:
                     if distance_sqr(u.position, unit.position) < 150:
                         direction = -1
                         break
-        
-        velocity=direction * 20 * (target_pos.x - unit.position.x)
-        print('vel', velocity, random.randint(-10,10) / 10)
+
+        velocity = direction * 20 * (target_pos.x - unit.position.x)
+        print('vel', velocity, random.randint(-10, 10) / 10)
         return model.UnitAction(
-            velocity=direction * 20 * (target_pos.x - unit.position.x) + random.randint(-10,10) / 10,
-#            velocity=100 if target_pos.x > unit.position.x else -100,
+            velocity=direction * 20 * (target_pos.x - unit.position.x) + random.randint(-10, 10) / 10,
             jump=jump,
             jump_down=not jump,
             aim=aim,
             shoot=shoot,
-#            shoot=False,
             reload=False,
             swap_weapon=(unit.weapon and (unit.weapon.typ == model.WeaponType.ROCKET_LAUNCHER)),
             plant_mine=(nearest_friend and unit.health < 20))
