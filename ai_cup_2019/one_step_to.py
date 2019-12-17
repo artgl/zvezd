@@ -90,11 +90,11 @@ def one_step_to(game, unit, target_position):
 #    print(unit.position.x, unit.position.y)
 
     # print my_map
-    for y in reversed(list(range(len_y))):
-        line = []
-        for x in range(len_x):
-            line.append(my_map[x][y])
-        print(line)
+#    for y in reversed(list(range(len_y))):
+#        line = []
+#        for x in range(len_x):
+#            line.append(my_map[x][y])
+#        print(line)
 
     # preparing matrix - we should invert y axis    
     matrix = []

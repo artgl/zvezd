@@ -12,6 +12,36 @@ import math
 def distance_sqr(a, b):
             return (a.x - b.x) ** 2 + (a.y - b.y) ** 2
 
+def distance_sqr_u(a, b):
+            return (a.position.x - b.position.x) ** 2 + (a.position.y - b.position.y) ** 2
+
+def on_fire_line(u1, enemy, u2, game):
+
+    print("on_fire_line")
+    u1 = u1.position
+    enemy = enemy.position
+    u2 = u2.position
+
+    d = math.sqrt(distance_sqr(u1, enemy))
+
+    aim = model.Vec2Double(
+        enemy.x - u1.x,
+        enemy.y - u1.y)
+
+    for i in range(int(d) - 1):
+        pos1 = model.Vec2Double(
+            u1.x + (i + 1) / d * aim.x,
+            u1.y + (i + 1) / d * aim.y)
+        print("Fireline ", i, int(pos1.x), int(pos1.y))
+        if math.sqrt(distance_sqr(pos1, u2)) < 1:
+            print("stop fire!!!")
+            return True
+        if i < 5 and game.level.tiles[int(pos1.x)][int(pos1.y+0.5)] == model.Tile.WALL:
+            print("stop fire wall !!!")
+            return True
+    return False
+
+
 class MyStrategy:
     def __init__(self):
         pass
@@ -95,16 +125,14 @@ class MyStrategy:
                 jump = True
         if nearest_friend and nearest_friend.id > unit.id:
             dx = (nearest_friend.position.x - unit.position.x - math.copysign(1, target_pos.x - unit.position.x))
-            print(dx)
-            if abs(dx) < 2 and target_pos.y > (unit.position.y + 2):
+            if abs(dx) < 1.5:
                 jump = True
 
         shoot = True
-        if unit.weapon and unit.weapon.typ == model.WeaponType.ROCKET_LAUNCHER:
+        if nearest_enemy and nearest_friend and on_fire_line(unit, nearest_enemy, nearest_friend, game):
             shoot = False
-            if nearest_enemy and abs(nearest_enemy.position.x - unit.position.x) < 50:
-                if nearest_friend and distance_sqr(unit.position, nearest_friend.position) > 20:
-                    shoot = True
+#        if unit.weapon and unit.weapon.typ == model.WeaponType.ROCKET_LAUNCHER:
+#            shoot = False
 
         direction = 1
         for u in game.units:
@@ -113,9 +141,11 @@ class MyStrategy:
                     if distance_sqr(u.position, unit.position) < 150:
                         direction = -1
                         break
- 
+        
+        velocity=direction * 20 * (target_pos.x - unit.position.x)
+        print('vel', velocity, random.randint(-10,10) / 10)
         return model.UnitAction(
-            velocity=direction * 20 * (target_pos.x - unit.position.x),
+            velocity=direction * 20 * (target_pos.x - unit.position.x) + random.randint(-10,10) / 10,
 #            velocity=100 if target_pos.x > unit.position.x else -100,
             jump=jump,
             jump_down=not jump,
