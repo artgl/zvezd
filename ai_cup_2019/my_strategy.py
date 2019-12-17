@@ -36,7 +36,7 @@ def on_fire_line(u1, enemy, u2, game):
         if math.sqrt(distance_sqr(pos1, u2)) < 1:
             print("stop fire!!!")
             return True
-        if i < 5 and game.level.tiles[int(pos1.x)][int(pos1.y+0.5)] == model.Tile.WALL:
+        if i < 6 and game.level.tiles[int(pos1.x)][int(pos1.y+0.5)] == model.Tile.WALL:
             print("stop fire wall !!!")
             return True
     return False
@@ -129,8 +129,13 @@ class MyStrategy:
                 jump = True
 
         shoot = True
-        if nearest_enemy and nearest_friend and on_fire_line(unit, nearest_enemy, nearest_friend, game):
-            shoot = False
+        if nearest_friend:
+            if nearest_enemy and on_fire_line(unit, nearest_enemy, nearest_friend, game):
+                shoot = False
+        else:
+            if on_fire_line(unit, nearest_enemy, unit, game):
+                shoot = False
+        
 #        if unit.weapon and unit.weapon.typ == model.WeaponType.ROCKET_LAUNCHER:
 #            shoot = False
 
