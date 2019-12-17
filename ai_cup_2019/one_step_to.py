@@ -13,6 +13,9 @@ def distance_sqr(a, b):
 
 def one_step_to(game, unit, target_position):
 
+    if unit.position == target_position:
+        return None
+
     tiles = game.level.tiles
 
     len_x = len(game.level.tiles)
@@ -48,7 +51,11 @@ def one_step_to(game, unit, target_position):
                     my_map[x+1][y] = 1
                 if tiles[x-1][y] == model.Tile.EMPTY:
                     my_map[x-1][y] = 1
-  
+                if tiles[x+1][y+1] == model.Tile.EMPTY:
+                    my_map[x+1][y+1] = 1
+                if tiles[x-1][y+1] == model.Tile.EMPTY:
+                    my_map[x-1][y+1] = 1
+   
     for x in range(len_x):
         for y in reversed(range(len_y)):
             if my_map[x][y] == 3:
@@ -99,7 +106,6 @@ def one_step_to(game, unit, target_position):
 
     grid = Grid(matrix=matrix)
     start = grid.node(int(unit.position.x), len_y - 1 - int(unit.position.y))
-#    end = grid.node(3, len_y - 1 - 15)
     end = grid.node(int(target_position.x), len_y - 1 - int(target_position.y))
     finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
     path, runs = finder.find_path(start, end, grid)
