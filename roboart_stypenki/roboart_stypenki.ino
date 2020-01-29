@@ -7,16 +7,14 @@ Servo servo1;
 
 void setup() 
 {
-pinMode(3, INPUT);
-
-
-  pinMode(10, OUTPUT);
-  pinMode(11, INPUT);
+  pinMode(3, INPUT);
+  pinMode(1, OUTPUT);
+  pinMode(2, INPUT);
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
-  servo1.attach(5);
+  servo1.attach(11);
   servo1.write(15); 
   
   Serial.begin(115200);
@@ -99,7 +97,7 @@ int vverx()
 
 
 
-int naklon_protiv_chsovoi ()
+int naklon_protiv_chsovoi1 ()
 {
 
    const int c = 3;
@@ -129,9 +127,9 @@ int naklon_protiv_chsovoi ()
 long yltrozvyk()
 {
 
-int trigPin = 10;    //Триггер – зеленый проводник
+int trigPin = 1;    //Триггер – зеленый проводник
 
-int echoPin = 11;    //Эхо – желтый проводник
+int echoPin = 2;    //Эхо – желтый проводник
 
 long duration, cm, inches;
 
@@ -210,10 +208,9 @@ delay(250);
 
 int i = 0;
 
-void loop()
+void loop1()
 {
  
-
 
   if (yltrozvyk() > 100)
   {
@@ -234,8 +231,8 @@ void loop()
   {
      // do nothing
      
-  Vector rawAccel = mpu.readRawAccel();
-      Serial.println(rawAccel.XAxis);
+     Vector rawAccel = mpu.readRawAccel();
+     Serial.println(rawAccel.XAxis);
   }
 
   
@@ -244,7 +241,7 @@ void loop()
   servo1.write(110);
   
 
-  while (naklon_protiv_chsovoi() == 0)
+  while (naklon_protiv_chsovoi1() == 0)
   {
     
   Vector rawAccel = mpu.readRawAccel();
@@ -282,4 +279,151 @@ void loop()
   i = i + 1;     
   Serial.println(i);
   
+}
+
+
+int vperedi_pustota()
+{
+    return (yltrozvyk() > 100);
+}
+
+void ehat_vpered()
+{
+  digitalWrite(6, HIGH);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, HIGH);
+  digitalWrite(9, HIGH);
+}
+
+void stop_all()
+{
+  digitalWrite(6, LOW);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, HIGH);
+  digitalWrite(9, LOW);
+}
+
+
+void ehat_nazad()
+{
+  digitalWrite(6, HIGH);
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+  digitalWrite(9, HIGH);
+}
+
+void ehat_vpered_medlenno()
+{
+  digitalWrite(7, HIGH);
+  digitalWrite(8, HIGH);
+ 
+  for (int i=0; i < 100; i=i+1)
+  {
+      digitalWrite(6, HIGH);
+      digitalWrite(9, HIGH);
+      delay(10);
+      digitalWrite(6, LOW);
+      digitalWrite(9, LOW);
+      delay(30);
+  }
+}
+
+int naklon_protiv_chasovoi()
+{
+    int good_result = 0; 
+    for (int p=0; p<5; p=p+1)
+    {
+        Vector rawAccel = mpu.readRawAccel();
+        if (rawAccel.XAxis > 6000)
+        {
+            good_result=good_result+1;
+        }
+        Serial.println(rawAccel.XAxis);
+        delay(10);
+    }
+    
+    Serial.print("naklon_protiv_chasovoi: ");
+
+    if (good_result == 5)
+    {
+        Serial.println(1);
+        return 1;
+    }
+    Serial.println(0);
+    return 0;
+}
+
+int naklon_po_chasovoi()
+{
+    int good_result = 0; 
+    for (int p=0; p<5; p=p+1)
+    {
+        Vector rawAccel = mpu.readRawAccel();
+        if (rawAccel.XAxis < -1600)
+        {
+            good_result=good_result+1;
+        }
+        Serial.println(rawAccel.XAxis);
+        delay(10);
+    }
+    
+    Serial.print("naklon_po_chasovoi: ");
+
+    if (good_result == 5)
+    {
+        Serial.println(1);
+        return 1;
+    }
+    Serial.println(0);
+    return 0;
+}
+
+
+
+
+void mahnut_hvostom()
+{
+   Serial.println("mahnut_hvostom");
+   servo1.write(100); 
+}
+
+void mahnut_hvostom_obratno()
+{
+   Serial.println("mahnut_hvostom_obratno");
+   servo1.write(15); 
+}
+
+void loop()
+{
+    if (!vperedi_pustota() || true)
+    {
+        Serial.println("vizhy stupenky");
+        ehat_vpered();
+        while (!naklon_protiv_chasovoi())
+        {
+          //
+        }
+        mahnut_hvostom();
+        while (!naklon_po_chasovoi())
+        {
+          //
+        }
+        mahnut_hvostom_obratno();
+        stop_all();
+        delay(100000);     
+    }
+    else
+    {
+        Serial.println("vperedi pustota");
+        while (true)
+        {
+            ehat_nazad();
+            if (naklon_protiv_chasovoi())
+            {
+                delay(300);
+                ehat_vpered_medlenno();
+                ehat_nazad();
+            }
+        }
+    }
 }
