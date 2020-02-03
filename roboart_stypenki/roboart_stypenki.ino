@@ -4,7 +4,7 @@
 
 MPU6050 mpu;
 Servo2 servo1; 
-int servo_pos = 15;
+int servo_pos = 50;
 
 void setup() 
 {
@@ -16,7 +16,7 @@ void setup()
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
   servo1.attach(11);
-  servo1.write(15); 
+  servo1.write(50); 
   
   Serial.begin(115200);
 
@@ -378,7 +378,7 @@ int est_naklon()
     for (int p=0; p<5; p=p+1)
     {
         Vector rawAccel = mpu.readRawAccel();
-        if (abs(rawAccel.XAxis - 1100) > 500)
+        if ((rawAccel.XAxis - 900) > 500)
         {
             good_result=good_result+1;
         }
@@ -413,18 +413,22 @@ void mahnut_hvostom_obratno()
 
 void mahnut_hvostom_new()
 {
-   if (est_naklon() && servo_pos < 110)
+   if (est_naklon() && servo_pos < 130)
        servo_pos += 3;
-   else if (servo_pos > 15)
+   else if (servo_pos > 50)
        servo_pos -= 3;
    else
-       servo_pos = 15;
+   {
+       delay(350);
+       servo_pos = 50;
+   }
    servo1.write(servo_pos);
 }
 
 
 void loop()
 {
+    ehat_vpered();
     while(true)
     {
       mahnut_hvostom_new();
