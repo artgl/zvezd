@@ -1,9 +1,10 @@
 #include <Wire.h>
 #include <MPU6050.h>
-#include <Servo.h>
+#include <Servo2.h>
 
 MPU6050 mpu;
-Servo servo1; 
+Servo2 servo1; 
+int servo_pos = 15;
 
 void setup() 
 {
@@ -316,16 +317,9 @@ void ehat_vpered_medlenno()
 {
   digitalWrite(7, HIGH);
   digitalWrite(8, HIGH);
- 
-  for (int i=0; i < 100; i=i+1)
-  {
-      digitalWrite(6, HIGH);
-      digitalWrite(9, HIGH);
-      delay(10);
-      digitalWrite(6, LOW);
-      digitalWrite(9, LOW);
-      delay(30);
-  }
+
+  analogWrite(6, 130);
+  analogWrite(9, 120);
 }
 
 int naklon_protiv_chasovoi()
@@ -334,7 +328,7 @@ int naklon_protiv_chasovoi()
     for (int p=0; p<5; p=p+1)
     {
         Vector rawAccel = mpu.readRawAccel();
-        if (rawAccel.XAxis > 6000)
+        if (rawAccel.XAxis > 1000)
         {
             good_result=good_result+1;
         }
@@ -378,13 +372,37 @@ int naklon_po_chasovoi()
     return 0;
 }
 
+int est_naklon()
+{
+    int good_result = 0; 
+    for (int p=0; p<5; p=p+1)
+    {
+        Vector rawAccel = mpu.readRawAccel();
+        if (abs(rawAccel.XAxis - 1100) > 500)
+        {
+            good_result=good_result+1;
+        }
+        Serial.println(rawAccel.XAxis);
+        delay(10);
+    }
+    
+    Serial.print("est_naklon: ");
+
+    if (good_result == 5)
+    {
+        Serial.println(1);
+        return 1;
+    }
+    Serial.println(0);
+    return 0;
+}
 
 
 
 void mahnut_hvostom()
 {
    Serial.println("mahnut_hvostom");
-   servo1.write(100); 
+   servo1.write(110);
 }
 
 void mahnut_hvostom_obratno()
@@ -393,8 +411,25 @@ void mahnut_hvostom_obratno()
    servo1.write(15); 
 }
 
+void mahnut_hvostom_new()
+{
+   if (est_naklon() && servo_pos < 110)
+       servo_pos += 3;
+   else if (servo_pos > 15)
+       servo_pos -= 3;
+   else
+       servo_pos = 15;
+   servo1.write(servo_pos);
+}
+
+
 void loop()
 {
+    while(true)
+    {
+      mahnut_hvostom_new();
+    }
+  
     if (!vperedi_pustota() || true)
     {
         Serial.println("vizhy stupenky");
@@ -403,6 +438,7 @@ void loop()
         {
           //
         }
+        ehat_vpered_medlenno();
         mahnut_hvostom();
         while (!naklon_po_chasovoi())
         {
@@ -410,7 +446,7 @@ void loop()
         }
         mahnut_hvostom_obratno();
         stop_all();
-        delay(100000);     
+        delay(100000);
     }
     else
     {
