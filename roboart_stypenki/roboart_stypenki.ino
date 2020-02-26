@@ -5,12 +5,13 @@
 MPU6050 mpu;
 Servo2 servo1; 
 int servo_pos = 50;
+int servo_min = 50;
+int servo_max = 130;
 
 void setup() 
 {
+  pinMode(2, OUTPUT);
   pinMode(3, INPUT);
-  pinMode(1, OUTPUT);
-  pinMode(2, INPUT);
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);
@@ -18,7 +19,7 @@ void setup()
   servo1.attach(11);
   servo1.write(50); 
   
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   Serial.println("Initialize MPU6050");
 
@@ -128,9 +129,9 @@ int naklon_protiv_chsovoi1 ()
 long yltrozvyk()
 {
 
-int trigPin = 1;    //Триггер – зеленый проводник
+int trigPin = 2;    //Триггер – зеленый проводник
 
-int echoPin = 2;    //Эхо – желтый проводник
+int echoPin = 3;    //Эхо – желтый проводник
 
 long duration, cm, inches;
 
@@ -290,10 +291,13 @@ int vperedi_pustota()
 
 void ehat_vpered()
 {
-  digitalWrite(6, HIGH);
   digitalWrite(7, HIGH);
   digitalWrite(8, HIGH);
-  digitalWrite(9, HIGH);
+
+  analogWrite(6, 255);
+  analogWrite(9, 235);
+
+
 }
 
 void stop_all()
@@ -318,8 +322,35 @@ void ehat_vpered_medlenno()
   digitalWrite(7, HIGH);
   digitalWrite(8, HIGH);
 
-  analogWrite(6, 130);
-  analogWrite(9, 120);
+  analogWrite(6, 170);
+  analogWrite(9, 160);
+}
+
+void ehat_nazad_vlevo()
+{
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+
+  analogWrite(6, 60);
+  analogWrite(9, 127);
+}
+
+void ehat_nazad_vpravo()
+{
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+
+  analogWrite(6, 150);
+  analogWrite(9, 60);
+}
+
+void ehat_nazad_medlenno()
+{
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+
+  analogWrite(6, 150);
+  analogWrite(9, 127);
 }
 
 int naklon_protiv_chasovoi()
@@ -328,12 +359,12 @@ int naklon_protiv_chasovoi()
     for (int p=0; p<5; p=p+1)
     {
         Vector rawAccel = mpu.readRawAccel();
-        if (rawAccel.XAxis > 1000)
+        if (rawAccel.XAxis > 6000)
         {
             good_result=good_result+1;
         }
         Serial.println(rawAccel.XAxis);
-        delay(10);
+        delay(15);
     }
     
     Serial.print("naklon_protiv_chasovoi: ");
@@ -426,44 +457,80 @@ void mahnut_hvostom_new()
 }
 
 
+int left_ok()
+{
+  return analogRead(A1) < 350;
+}
+
+int right_ok()
+{
+  return analogRead(A0) < 450;
+}
+
+
 void loop()
 {
+        
+    servo1.write(servo_min);
     ehat_vpered();
-    while(true)
+    while (!naklon_protiv_chasovoi())
     {
-      mahnut_hvostom_new();
-    }
-  
-    if (!vperedi_pustota() || true)
+
+    if (vperedi_pustota())
     {
-        Serial.println("vizhy stupenky");
-        ehat_vpered();
-        while (!naklon_protiv_chasovoi())
-        {
-          //
-        }
-        ehat_vpered_medlenno();
-        mahnut_hvostom();
-        while (!naklon_po_chasovoi())
-        {
-          //
-        }
-        mahnut_hvostom_obratno();
-        stop_all();
-        delay(100000);
+      delay(500);
     }
-    else
+  if (vperedi_pustota())
+  {
+    while (true)
     {
-        Serial.println("vperedi pustota");
-        while (true)
+      int l = left_ok();
+      int r = right_ok();
+
+      if (l == r)
+      {
+        Serial.println("l==r");
+        ehat_nazad_medlenno();   
+      }
+      else
+      {
+        if (l < r)
         {
-            ehat_nazad();
-            if (naklon_protiv_chasovoi())
-            {
-                delay(300);
-                ehat_vpered_medlenno();
-                ehat_nazad();
-            }
+          Serial.println("l<r");
+          stop_all();
+          delay(500);    
+//      ehat_nazad_vpravo();
+//      delay(300);    
         }
+        else
+        {
+          Serial.println("l>r");
+          stop_all();
+          delay(500);    
+//      ehat_nazad_vlevo();
+//      delay(300);
+        }
+      }
     }
+  }
+
+
+
+      
+      //
+    }
+    ehat_vpered_medlenno();
+    servo1.write(servo_max);
+    delay(600);
+    servo1.write(servo_min);
+ 
+//    stop_all();
+    delay(200);    
+    stop_all();
+    if (vperedi_pustota())
+    {
+      delay(1000);
+    }
+    ehat_vpered_medlenno();
+    
 }
